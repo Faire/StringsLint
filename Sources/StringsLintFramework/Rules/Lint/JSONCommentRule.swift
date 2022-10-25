@@ -131,6 +131,14 @@ extension JSONCommentRule: LintRule {
         return .placeholderCountsDontMatch
     }
 
+      if let img = jsonComment.img {
+          guard let url = URL(string: img) else {
+              return .invalidScreenshotURL
+          }
+      } else {
+          return .missingScreenshotURL
+      }
+
     return nil
   }
 }
@@ -143,6 +151,9 @@ extension JSONCommentRule {
         case emptyDescription
         case containsInvalidPlaceholders(invalidPlaceholders: Set<String>)
         case placeholderCountsDontMatch
+        case missingScreenshotURL
+        case invalidScreenshotURL
+
 
         var reasonDescription: String {
             switch self {
@@ -156,7 +167,10 @@ extension JSONCommentRule {
                 return "contains invalid placeholders: \"\(invalidPlaceholders.joined(separator: "\", \""))\""
             case .placeholderCountsDontMatch:
                 return "number of placeholders don't match"
-
+            case .missingScreenshotURL:
+                return "screenshot URL for this localized string is missing"
+            case .invalidScreenshotURL:
+                return "screenshot URL for this localized string is invalid"
             }
         }
     }
@@ -164,10 +178,12 @@ extension JSONCommentRule {
     fileprivate struct PlaceholderComment: Decodable {
         let descriptionString: String?
         let placeholders: [String]?
+        let img: String?
 
         enum CodingKeys: String, CodingKey {
             case descriptionString = "description"
             case placeholders
+            case img
         }
     }
 }
