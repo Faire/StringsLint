@@ -175,7 +175,8 @@ class JSONCommentRuleTests: XCTestCase {
           /*
           {
             "description": "A CTA to go to the New Arrivals shopping section, links the retailer to this category",
-            "placeholders": ["tariff_code", "sku", "token", "tracking_code"]
+            "placeholders": ["tariff_code", "sku", "token", "tracking_code"],
+            "img": "https://www.google.com/"
           }
            */
           "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@ %@ %@";
@@ -200,7 +201,8 @@ class JSONCommentRuleTests: XCTestCase {
           /*
           {
             "description": "A CTA to go to the New Arrivals shopping section, links the retailer to this category",
-            "placeholders": ["day", "month"]
+            "placeholders": ["day", "month"],
+            "img": "https://www.google.com/"
           }
            */
           "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
@@ -211,6 +213,59 @@ class JSONCommentRuleTests: XCTestCase {
 
       XCTAssertEqual(rule.violations.count, 0)
   }
+
+    func testStringWithMissingURL() {
+
+        let file = File(name: "Localizable.strings", content: """
+            /*
+              Retailer.strings
+              Retailer
+
+              Created by Raissa Nucci on 07/04/20.
+              Copyright © 2020 Faire Inc. All rights reserved.
+            */
+            /*
+            {
+              "description": "A CTA to go to the New Arrivals shopping section, links the retailer to this category",
+              "placeholders": ["day", "month"]
+            }
+             */
+            "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
+            """)
+
+        let rule = JSONCommentRule()
+        rule.processFile(file)
+
+        XCTAssertEqual(rule.violations.count, 1)
+        XCTAssertEqual(rule.violations.first?.severity, .warning)
+    }
+
+    func testStringWithInvalidURL() {
+
+        let file = File(name: "Localizable.strings", content: """
+            /*
+              Retailer.strings
+              Retailer
+
+              Created by Raissa Nucci on 07/04/20.
+              Copyright © 2020 Faire Inc. All rights reserved.
+            */
+            /*
+            {
+              "description": "A CTA to go to the New Arrivals shopping section, links the retailer to this category",
+              "placeholders": ["day", "month"],
+              "img": "Something not a URL"
+            }
+             */
+            "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
+            """)
+
+        let rule = JSONCommentRule()
+        rule.processFile(file)
+
+        XCTAssertEqual(rule.violations.count, 1)
+        XCTAssertEqual(rule.violations.first?.severity, .warning)
+    }
 
   func testStringsDict_with_noViolations() {
 
