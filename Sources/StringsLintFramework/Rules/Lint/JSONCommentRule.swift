@@ -87,16 +87,12 @@ extension JSONCommentRule: LintRule {
 
         DispatchQueue.concurrentPerform(iterations: self.declaredStrings.count) { index in
             let string = self.declaredStrings[index]
-            var severity = self.severity
             if let violationType = getViolation(for: string) {
                 lock.lock()
-                if ViolationType.missingScreenshotURL.reasonDescription == violationType.reasonDescription || ViolationType.invalidScreenshotURL.reasonDescription == violationType.reasonDescription {
-                    severity = .warning
-                }
                 _violations.append(
                     Violation(
                         ruleDescription: JSONCommentRule.description,
-                        severity: severity,
+                        severity: violationType.severityOveride ?? self.severity,
                         location: string.location,
                         reason: "Comment for Localized string \"\(string.key)\" \(violationType.reasonDescription)"
                     )
@@ -175,6 +171,25 @@ extension JSONCommentRule {
                 return "screenshot URL for this localized string is missing"
             case .invalidScreenshotURL:
                 return "screenshot URL for this localized string is invalid"
+            }
+        }
+
+        var severityOverride: ViolationSeverity? {
+            switch self {
+            case .invalidJSON:
+                return nil
+            case .missingDescription:
+                return nil
+            case .emptyDescription:
+                return nil
+            case .containsInvalidPlaceholders(_):
+                return nil
+            case .placeholderCountsDontMatch:
+                return nil
+            case .missingScreenshotURL:
+                return .warning
+            case .invalidScreenshotURL:
+                return .warning
             }
         }
     }
