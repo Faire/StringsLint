@@ -49,6 +49,48 @@ let myVar = abc
     XCTAssertEqual(rule.violations.count, 1)
   }
 
+  func testStringWithUsage_stringOperation() {
+
+    let stringsFile = File(
+      name: "Localizable.strings",
+      content: """
+          \"abc\" = \"A B C\";
+"""
+    )
+
+    let usageFile = File(name: "hi.swift", content: """
+let myVar = L10n.abc.underlined
+""")
+
+    let rule = UnusedSwiftGenRule()
+    rule.processFile(stringsFile)
+    rule.processFile(usageFile)
+
+    XCTAssertEqual(rule.violations.count, 0)
+  }
+
+  func testStringWithUsage_multiline() {
+
+    let stringsFile = File(
+      name: "Localizable.strings",
+      content: """
+          \"abc.def\" = \"A B C\";
+"""
+    )
+
+    let usageFile = File(name: "hi.swift", content: """
+let myVar = L10n
+  .Abc
+  .def
+""")
+
+    let rule = UnusedSwiftGenRule()
+    rule.processFile(stringsFile)
+    rule.processFile(usageFile)
+
+    XCTAssertEqual(rule.violations.count, 0)
+  }
+
   func testStringWithNoUsage_multipleStringsFiles() {
 
     let stringsFile1 = File(
