@@ -239,7 +239,7 @@ class JSONCommentRuleTests: XCTestCase {
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.severity, .warning)
+        XCTAssertEqual(rule.violations.first?.severity, ViolationSeverity.none)
     }
 
     func testStringWithInvalidURL() {
@@ -266,7 +266,7 @@ class JSONCommentRuleTests: XCTestCase {
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.severity, .warning)
+        XCTAssertEqual(rule.violations.first?.severity, ViolationSeverity.none)
     }
 
     func testStringWithInvalidComment_StringLongerThanMaxCharCount() {
@@ -294,6 +294,7 @@ class JSONCommentRuleTests: XCTestCase {
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
+        XCTAssertEqual(rule.violations.first?.severity, ViolationSeverity.none)
     }
 
   func testStringsDict_with_noViolations() {

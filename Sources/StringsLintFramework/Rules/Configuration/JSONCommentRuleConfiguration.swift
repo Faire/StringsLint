@@ -14,6 +14,7 @@ public struct JSONCommentRuleConfiguration: RuleConfiguration {
 
     //TODO: (Mark Hall, July 18) once we have all the existing strings converted to the new comment format, make this an error severity
     public var severity: ViolationSeverity = .warning
+    public var screenshot_and_max_char_rules_severity: ViolationSeverity = .none
 
     public mutating func apply(_ configuration: Any) throws {
 
@@ -22,6 +23,8 @@ public struct JSONCommentRuleConfiguration: RuleConfiguration {
         }
 
         self.severity = ViolationSeverity(rawValue: configuration["severity"] as! String) ?? self.severity
+
+        self.screenshot_and_max_char_rules_severity = ViolationSeverity(rawValue: configuration["screenshot_and_max_char_rules_severity"] as! String) ?? self.screenshot_and_max_char_rules_severity
     }
 
 }

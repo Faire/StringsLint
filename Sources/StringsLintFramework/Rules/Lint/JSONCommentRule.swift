@@ -10,6 +10,7 @@ import Foundation
 public class JSONCommentRule {
     private var declaredStrings = [LocalizedString]()
     var severity: ViolationSeverity
+    var screenshot_and_max_char_rules_severity: ViolationSeverity
 
     private let declareParser: LocalizableParser
 
@@ -34,9 +35,11 @@ public class JSONCommentRule {
     ])
 
     public init(declareParser: LocalizableParser,
-                severity: ViolationSeverity) {
+                severity: ViolationSeverity,
+                screenshot_and_max_char_rules_severity: ViolationSeverity) {
         self.declareParser = declareParser
         self.severity = severity
+        self.screenshot_and_max_char_rules_severity = screenshot_and_max_char_rules_severity
     }
 
     public required convenience init(configuration: Any) throws {
@@ -47,7 +50,8 @@ public class JSONCommentRule {
 
         self.init(declareParser: ComposedParser(parsers: [try StringsdictParser.self.init(configuration: configuration),
                                                           try StringsJSONCommentParser.self.init(configuration: configuration)]),
-                  severity: config.severity)
+                  severity: config.severity,
+                  screenshot_and_max_char_rules_severity: config.screenshot_and_max_char_rules_severity)
     }
 
     public required convenience init() {
@@ -55,7 +59,8 @@ public class JSONCommentRule {
 
         self.init(declareParser: ComposedParser(parsers: [StringsdictParser(),
                                                           StringsJSONCommentParser()]),
-                  severity: config.severity)
+                  severity: config.severity,
+                  screenshot_and_max_char_rules_severity: config.screenshot_and_max_char_rules_severity)
     }
 
     private func processDeclarationFile(_ file: File) -> [LocalizedString] {
@@ -92,7 +97,7 @@ extension JSONCommentRule: LintRule {
                 _violations.append(
                     Violation(
                         ruleDescription: JSONCommentRule.description,
-                        severity: violationType.severityOverride ?? self.severity,
+                        severity: violationType.severityOverride ? self.screenshot_and_max_char_rules_severity : self.severity,
                         location: string.location,
                         reason: "Comment for Localized string \"\(string.key)\" \(violationType.reasonDescription)"
                     )
@@ -186,24 +191,24 @@ extension JSONCommentRule {
             }
         }
 
-        var severityOverride: ViolationSeverity? {
+        var severityOverride: Bool {
             switch self {
             case .invalidJSON:
-                return nil
+                return false
             case .missingDescription:
-                return nil
+                return false
             case .emptyDescription:
-                return nil
+                return false
             case .containsInvalidPlaceholders(_):
-                return nil
+                return false
             case .placeholderCountsDontMatch:
-                return nil
+                return false
             case .missingScreenshotURL:
-                return .warning
+                return true
             case .invalidScreenshotURL:
-                return .warning
+                return true
             case .maxCharacterCountExceeded:
-                return .warning
+                return true
             }
         }
     }
