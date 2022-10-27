@@ -144,7 +144,7 @@ extension JSONCommentRule: LintRule {
         return .missingScreenshotURL
     }
 
-    if let charCount = jsonComment.max_character_count,
+    if let charCount = jsonComment.maxCharacterCount,
        let value = string.value {
         for val in value {
             if val.count > charCount {
@@ -217,13 +217,13 @@ extension JSONCommentRule {
         let descriptionString: String?
         let placeholders: [String]?
         let img: String?
-        let max_character_count: Int?
+        let maxCharacterCount: Int?
 
         enum CodingKeys: String, CodingKey {
             case descriptionString = "description"
             case placeholders
             case img
-            case max_character_count
+            case maxCharacterCount = "max_character_count"
         }
     }
 }
