@@ -92,7 +92,7 @@ extension JSONCommentRule: LintRule {
                 _violations.append(
                     Violation(
                         ruleDescription: JSONCommentRule.description,
-                        severity: violationType.severityOveride ?? self.severity,
+                        severity: violationType.severityOverride ?? self.severity,
                         location: string.location,
                         reason: "Comment for Localized string \"\(string.key)\" \(violationType.reasonDescription)"
                     )
@@ -131,13 +131,22 @@ extension JSONCommentRule: LintRule {
         return .placeholderCountsDontMatch
     }
 
-      if let img = jsonComment.img {
-          guard URL(string: img) != nil else {
-              return .invalidScreenshotURL
-          }
-      } else {
-          return .missingScreenshotURL
-      }
+    if let img = jsonComment.img {
+        guard URL(string: img) != nil else {
+            return .invalidScreenshotURL
+        }
+    } else {
+        return .missingScreenshotURL
+    }
+
+    if let charCount = jsonComment.max_character_count,
+       let value = string.value {
+        for val in value {
+            if val.count > charCount {
+                return .maxCharacterCountExceeded
+            }
+        }
+    }
 
     return nil
   }
@@ -153,6 +162,7 @@ extension JSONCommentRule {
         case placeholderCountsDontMatch
         case missingScreenshotURL
         case invalidScreenshotURL
+        case maxCharacterCountExceeded
 
 
         var reasonDescription: String {
@@ -171,6 +181,8 @@ extension JSONCommentRule {
                 return "screenshot URL for this localized string is missing"
             case .invalidScreenshotURL:
                 return "screenshot URL for this localized string is invalid"
+            case .maxCharacterCountExceeded:
+                return "the string is longer than the max character count allowed"
             }
         }
 
@@ -190,6 +202,8 @@ extension JSONCommentRule {
                 return .warning
             case .invalidScreenshotURL:
                 return .warning
+            case .maxCharacterCountExceeded:
+                return .warning
             }
         }
     }
@@ -198,11 +212,13 @@ extension JSONCommentRule {
         let descriptionString: String?
         let placeholders: [String]?
         let img: String?
+        let max_character_count: Int?
 
         enum CodingKeys: String, CodingKey {
             case descriptionString = "description"
             case placeholders
             case img
+            case max_character_count
         }
     }
 }

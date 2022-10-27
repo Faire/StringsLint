@@ -56,7 +56,8 @@ public struct StringsdictParser: LocalizableParser {
                                                locale: locale,
                                                location: Location(file: file, line: index+1),
                                                placeholders: validPlaceholders,
-                                               comment: item.formattedComment))
+                                               comment: item.formattedComment,
+                                               value: item.strings))
             }
         }
         

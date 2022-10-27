@@ -203,7 +203,8 @@ class JSONCommentRuleTests: XCTestCase {
           {
             "description": "A CTA to go to the New Arrivals shopping section, links the retailer to this category",
             "placeholders": ["day", "month"],
-            "img": "https://www.google.com/"
+            "img": "https://www.google.com/",
+            "max_character_count": 20
           }
            */
           "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
@@ -266,6 +267,33 @@ class JSONCommentRuleTests: XCTestCase {
 
         XCTAssertEqual(rule.violations.count, 1)
         XCTAssertEqual(rule.violations.first?.severity, .warning)
+    }
+
+    func testStringWithInvalidComment_StringLongerThanMaxCharCount() {
+
+        let file = File(name: "Localizable.strings", content: """
+            /*
+              Retailer.strings
+              Retailer
+
+              Created by Raissa Nucci on 07/04/20.
+              Copyright © 2020 Faire Inc. All rights reserved.
+            */
+            /*
+            {
+              "description": "A CTA to go to the New Arrivals shopping section, links the retailer to this category",
+              "placeholders": ["day", "month"],
+              "img": "https://www.google.com/",
+              "max_character_count": 4
+            }
+             */
+            "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
+            """)
+
+        let rule = JSONCommentRule()
+        rule.processFile(file)
+
+        XCTAssertEqual(rule.violations.count, 1)
     }
 
   func testStringsDict_with_noViolations() {
