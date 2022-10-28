@@ -9,11 +9,12 @@ import Foundation
 
 public struct JSONCommentRuleConfiguration: RuleConfiguration {
     public var description: String {
-        return "severity: \(self.severity)"
+        return "Default Severity: \(self.defaultSeverity)"
     }
 
     //TODO: (Mark Hall, July 18) once we have all the existing strings converted to the new comment format, make this an error severity
-    public var severity: ViolationSeverity = .warning
+    public var defaultSeverity: ViolationSeverity = .warning
+    public var severityMap: [String:String] = [:]
 
     public mutating func apply(_ configuration: Any) throws {
 
@@ -21,7 +22,8 @@ public struct JSONCommentRuleConfiguration: RuleConfiguration {
             throw ConfigurationError.unknownConfiguration
         }
 
-        self.severity = ViolationSeverity(rawValue: configuration["severity"] as! String) ?? self.severity
+        self.severityMap = configuration["severity_map"] as! [String:String]
+
     }
 
 }

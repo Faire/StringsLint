@@ -12,6 +12,7 @@ public struct LocalizedString: CustomStringConvertible, Hashable {
     let location: Location
     var placeholders: [String] = []
     var comment: String? = nil
+    var value: [String]? = nil
     
     public var description: String {
         return [

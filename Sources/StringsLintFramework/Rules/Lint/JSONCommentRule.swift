@@ -9,7 +9,8 @@ import Foundation
 
 public class JSONCommentRule {
     private var declaredStrings = [LocalizedString]()
-    var severity: ViolationSeverity
+    var defaultSeverity: ViolationSeverity
+    var severityMap: [String:String]
 
     private let declareParser: LocalizableParser
 
@@ -34,9 +35,11 @@ public class JSONCommentRule {
     ])
 
     public init(declareParser: LocalizableParser,
-                severity: ViolationSeverity) {
+                defaultSeverity: ViolationSeverity,
+                severityMap: [String:String]) {
         self.declareParser = declareParser
-        self.severity = severity
+        self.defaultSeverity = defaultSeverity
+        self.severityMap = severityMap
     }
 
     public required convenience init(configuration: Any) throws {
@@ -47,7 +50,8 @@ public class JSONCommentRule {
 
         self.init(declareParser: ComposedParser(parsers: [try StringsdictParser.self.init(configuration: configuration),
                                                           try StringsJSONCommentParser.self.init(configuration: configuration)]),
-                  severity: config.severity)
+                  defaultSeverity: config.defaultSeverity,
+                  severityMap: config.severityMap)
     }
 
     public required convenience init() {
@@ -55,7 +59,8 @@ public class JSONCommentRule {
 
         self.init(declareParser: ComposedParser(parsers: [StringsdictParser(),
                                                           StringsJSONCommentParser()]),
-                  severity: config.severity)
+                  defaultSeverity: config.defaultSeverity,
+                  severityMap: config.severityMap)
     }
 
     private func processDeclarationFile(_ file: File) -> [LocalizedString] {
@@ -92,7 +97,7 @@ extension JSONCommentRule: LintRule {
                 _violations.append(
                     Violation(
                         ruleDescription: JSONCommentRule.description,
-                        severity: self.severity,
+                        severity: ViolationSeverity(rawValue: self.severityMap[violationType.rawDescription] ?? "") ?? self.defaultSeverity,
                         location: string.location,
                         reason: "Comment for Localized string \"\(string.key)\" \(violationType.reasonDescription)"
                     )
@@ -131,6 +136,23 @@ extension JSONCommentRule: LintRule {
         return .placeholderCountsDontMatch
     }
 
+    if let img = jsonComment.img {
+        guard URL(string: img) != nil else {
+            return .invalidScreenshotURL
+        }
+    } else {
+        return .missingScreenshotURL
+    }
+
+    if let charCount = jsonComment.maxCharacterCount,
+       let value = string.value {
+        for val in value {
+            if val.count > charCount {
+                return .maxCharacterCountExceeded
+            }
+        }
+    }
+
     return nil
   }
 }
@@ -143,6 +165,10 @@ extension JSONCommentRule {
         case emptyDescription
         case containsInvalidPlaceholders(invalidPlaceholders: Set<String>)
         case placeholderCountsDontMatch
+        case missingScreenshotURL
+        case invalidScreenshotURL
+        case maxCharacterCountExceeded
+
 
         var reasonDescription: String {
             switch self {
@@ -156,7 +182,33 @@ extension JSONCommentRule {
                 return "contains invalid placeholders: \"\(invalidPlaceholders.joined(separator: "\", \""))\""
             case .placeholderCountsDontMatch:
                 return "number of placeholders don't match"
+            case .missingScreenshotURL:
+                return "screenshot URL for this localized string is missing"
+            case .invalidScreenshotURL:
+                return "screenshot URL for this localized string is invalid"
+            case .maxCharacterCountExceeded:
+                return "the string is longer than the max character count allowed"
+            }
+        }
 
+        var rawDescription: String {
+            switch self {
+            case .invalidJSON:
+                return "invalidJSON"
+            case .missingDescription:
+                return "missingDescription"
+            case .emptyDescription:
+                return "emptyDescription"
+            case .containsInvalidPlaceholders(let invalidPlaceholders):
+                return "containsInvalidPlaceholders"
+            case .placeholderCountsDontMatch:
+                return "placeholderCountsDontMatch"
+            case .missingScreenshotURL:
+                return "missingScreenshotURL"
+            case .invalidScreenshotURL:
+                return "invalidScreenshotURL"
+            case .maxCharacterCountExceeded:
+                return "maxCharacterCountExceeded"
             }
         }
     }
@@ -164,10 +216,14 @@ extension JSONCommentRule {
     fileprivate struct PlaceholderComment: Decodable {
         let descriptionString: String?
         let placeholders: [String]?
+        let img: String?
+        let maxCharacterCount: Int?
 
         enum CodingKeys: String, CodingKey {
             case descriptionString = "description"
             case placeholders
+            case img
+            case maxCharacterCount = "max_character_count"
         }
     }
 }

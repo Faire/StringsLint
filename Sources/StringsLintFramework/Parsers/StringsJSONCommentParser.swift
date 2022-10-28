@@ -51,7 +51,8 @@ public struct StringsJSONCommentParser: LocalizableParser {
                                                locale: locale,
                                                location: Location(file: file, line: lineNumber),
                                                placeholders: value.localizedStringPlaceholders,
-                                               comment: commentForLocalizedString))
+                                               comment: commentForLocalizedString,
+                                               value: [value]))
             }
         }
 
