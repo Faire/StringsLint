@@ -45,7 +45,7 @@ public struct SwiftL10nParser: LocalizableParser {
 
 private extension SwiftL10nParser {
   enum Constants {
-    static let L10nPattern = #"L10n((\n\s*)?\.[a-zA-Z0-9.]+)+"#
+    static let L10nPattern = #"L10n((\s*\n\s*)?\.[A-Z][a-zA-Z0-9]*)*(\s*\n\s*)?(\.[a-z][a-zA-Z0-9]*)"#
   }
 
   /// Maps the match order to file number
@@ -53,7 +53,7 @@ private extension SwiftL10nParser {
     var counter = 0
     var map = [Int: Int]()
     for (idx, line) in file.lines.enumerated() {
-      let regex = try! NSRegularExpression(pattern: #"L10n\."#)
+      let regex = try! NSRegularExpression(pattern: #"L10n"#)
       for _ in regex.matches(in: line, range: NSRange(line.startIndex..., in: line)) {
         map[counter] = idx+1
         counter += 1
