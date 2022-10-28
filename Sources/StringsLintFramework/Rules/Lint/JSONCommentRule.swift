@@ -9,8 +9,8 @@ import Foundation
 
 public class JSONCommentRule {
     private var declaredStrings = [LocalizedString]()
-    var severity: ViolationSeverity
-    var screenshot_and_max_char_rules_severity: ViolationSeverity
+    var defaultSeverity: ViolationSeverity
+    var severityMap: [String:String]
 
     private let declareParser: LocalizableParser
 
@@ -35,11 +35,11 @@ public class JSONCommentRule {
     ])
 
     public init(declareParser: LocalizableParser,
-                severity: ViolationSeverity,
-                screenshot_and_max_char_rules_severity: ViolationSeverity) {
+                defaultSeverity: ViolationSeverity,
+                severityMap: [String:String]) {
         self.declareParser = declareParser
-        self.severity = severity
-        self.screenshot_and_max_char_rules_severity = screenshot_and_max_char_rules_severity
+        self.defaultSeverity = defaultSeverity
+        self.severityMap = severityMap
     }
 
     public required convenience init(configuration: Any) throws {
@@ -50,8 +50,8 @@ public class JSONCommentRule {
 
         self.init(declareParser: ComposedParser(parsers: [try StringsdictParser.self.init(configuration: configuration),
                                                           try StringsJSONCommentParser.self.init(configuration: configuration)]),
-                  severity: config.severity,
-                  screenshot_and_max_char_rules_severity: config.screenshot_and_max_char_rules_severity)
+                  defaultSeverity: config.defaultSeverity,
+                  severityMap: config.severityMap)
     }
 
     public required convenience init() {
@@ -59,8 +59,8 @@ public class JSONCommentRule {
 
         self.init(declareParser: ComposedParser(parsers: [StringsdictParser(),
                                                           StringsJSONCommentParser()]),
-                  severity: config.severity,
-                  screenshot_and_max_char_rules_severity: config.screenshot_and_max_char_rules_severity)
+                  defaultSeverity: config.defaultSeverity,
+                  severityMap: config.severityMap)
     }
 
     private func processDeclarationFile(_ file: File) -> [LocalizedString] {
@@ -97,7 +97,7 @@ extension JSONCommentRule: LintRule {
                 _violations.append(
                     Violation(
                         ruleDescription: JSONCommentRule.description,
-                        severity: violationType.severityOverride ? self.screenshot_and_max_char_rules_severity : self.severity,
+                        severity: ViolationSeverity(rawValue: self.severityMap[violationType.rawDescription] ?? "") ?? self.defaultSeverity,
                         location: string.location,
                         reason: "Comment for Localized string \"\(string.key)\" \(violationType.reasonDescription)"
                     )
@@ -191,24 +191,24 @@ extension JSONCommentRule {
             }
         }
 
-        var severityOverride: Bool {
+        var rawDescription: String {
             switch self {
             case .invalidJSON:
-                return false
+                return "invalidJSON"
             case .missingDescription:
-                return false
+                return "missingDescription"
             case .emptyDescription:
-                return false
-            case .containsInvalidPlaceholders(_):
-                return false
+                return "emptyDescription"
+            case .containsInvalidPlaceholders(let invalidPlaceholders):
+                return "containsInvalidPlaceholders"
             case .placeholderCountsDontMatch:
-                return false
+                return "placeholderCountsDontMatch"
             case .missingScreenshotURL:
-                return true
+                return "missingScreenshotURL"
             case .invalidScreenshotURL:
-                return true
+                return "invalidScreenshotURL"
             case .maxCharacterCountExceeded:
-                return true
+                return "maxCharacterCountExceeded"
             }
         }
     }

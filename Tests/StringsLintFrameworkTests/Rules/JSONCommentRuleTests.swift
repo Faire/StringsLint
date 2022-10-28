@@ -239,7 +239,7 @@ class JSONCommentRuleTests: XCTestCase {
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.severity, ViolationSeverity.none)
+        XCTAssertEqual(rule.violations.first?.severity, .warning)
     }
 
     func testStringWithInvalidURL() {
@@ -266,7 +266,7 @@ class JSONCommentRuleTests: XCTestCase {
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.severity, ViolationSeverity.none)
+        XCTAssertEqual(rule.violations.first?.severity, .warning)
     }
 
     func testStringWithInvalidComment_StringLongerThanMaxCharCount() {
@@ -294,7 +294,53 @@ class JSONCommentRuleTests: XCTestCase {
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.severity, ViolationSeverity.none)
+        XCTAssertEqual(rule.violations.first?.severity, .warning)
+    }
+
+    func testStringWithValidComment_ConfigurationProvided() {
+
+        let file = File(name: "Localizable.strings", content: """
+            /*
+              Retailer.strings
+              Retailer
+
+              Created by Raissa Nucci on 07/04/20.
+              Copyright © 2020 Faire Inc. All rights reserved.
+            */
+            /*
+            {
+              "description": "A CTA to go to the New Arrivals shopping section, links the retailer to this category",
+              "placeholders": ["day", "month"],
+              "img": "https://www.google.com/",
+              "max_character_count": 4
+            }
+             */
+            "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
+            """)
+
+        let config = ["json_comment_rule": ["severity_map": [
+            "invalidJSON": "error",
+            "missingDescription": "error",
+            "emptyDescription": "error",
+            "containsInvalidPlaceholders": "error",
+            "placeholderCountsDontMatch": "error",
+            "missingScreenshotURL": "none",
+            "invalidScreenshotURL": "none",
+            "maxCharacterCountExceeded": "none"]]]
+
+        var rule: JSONCommentRule?
+        do {
+           try rule = JSONCommentRule(configuration: config)
+        } catch {}
+
+        if let rule = rule {
+            rule.processFile(file)
+
+            XCTAssertEqual(rule.violations.count, 1)
+            XCTAssertEqual(rule.violations.first?.severity, ViolationSeverity.none)
+        } else {
+            XCTAssertEqual(true, false)
+        }
     }
 
   func testStringsDict_with_noViolations() {
