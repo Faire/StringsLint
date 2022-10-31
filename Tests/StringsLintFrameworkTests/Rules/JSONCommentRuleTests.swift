@@ -216,6 +216,34 @@ class JSONCommentRuleTests: XCTestCase {
       XCTAssertEqual(rule.violations.count, 0)
   }
 
+    func testStringWithInvalidComment_MistypedJSONKey() {
+
+        let file = File(name: "Localizable.strings", content: """
+            /*
+              Retailer.strings
+              Retailer
+
+              Created by Raissa Nucci on 07/04/20.
+              Copyright © 2020 Faire Inc. All rights reserved.
+            */
+            /*
+            {
+              "description": "A CTA to go to the New Arrivals shopping section, links the retailer to this category",
+              "placeholders": ["day", "month"],
+              "img": "https://www.google.com/",
+              "max_char_count": 20
+            }
+             */
+            "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
+            """)
+
+        let rule = JSONCommentRule()
+        rule.processFile(file)
+
+        XCTAssertEqual(rule.violations.count, 1)
+        XCTAssertEqual(rule.violations.first?.reason, "Comment for Localized string \"EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS\" contains invalid JSON keys: \"max_char_count\"")
+    }
+
     func testStringWithMissingURL() {
 
         let file = File(name: "Localizable.strings", content: """
