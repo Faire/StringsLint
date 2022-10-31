@@ -128,7 +128,7 @@ extension JSONCommentRule: LintRule {
           let jsonDict = try JSONSerialization.jsonObject(with: jsonData, options: []) as! [String: Any]
           for (k, _) in jsonDict {
               if !validKeys.contains(k) {
-                  return .invalidJSON
+                  return .invalidJSONKey(invalidKey: k)
               }
           }
       } catch {}
@@ -184,6 +184,7 @@ extension JSONCommentRule {
         case missingScreenshotURL
         case invalidScreenshotURL
         case maxCharacterCountExceeded
+        case invalidJSONKey(invalidKey: String)
 
 
         var reasonDescription: String {
@@ -204,6 +205,8 @@ extension JSONCommentRule {
                 return "screenshot URL for this localized string is invalid"
             case .maxCharacterCountExceeded:
                 return "the string is longer than the max character count allowed"
+            case .invalidJSONKey(let invalidKey):
+                return "the key \(invalidKey) is not allowed in this structured comment"
             }
         }
 
@@ -215,7 +218,7 @@ extension JSONCommentRule {
                 return "missingDescription"
             case .emptyDescription:
                 return "emptyDescription"
-            case .containsInvalidPlaceholders(let _):
+            case .containsInvalidPlaceholders(_):
                 return "containsInvalidPlaceholders"
             case .placeholderCountsDontMatch:
                 return "placeholderCountsDontMatch"
@@ -225,6 +228,8 @@ extension JSONCommentRule {
                 return "invalidScreenshotURL"
             case .maxCharacterCountExceeded:
                 return "maxCharacterCountExceeded"
+            case .invalidJSONKey(_):
+                return "invalidJSONKey"
             }
         }
     }
