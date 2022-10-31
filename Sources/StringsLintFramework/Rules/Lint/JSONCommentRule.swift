@@ -218,7 +218,7 @@ extension JSONCommentRule {
                 return "missingDescription"
             case .emptyDescription:
                 return "emptyDescription"
-            case .containsInvalidPlaceholders(_):
+            case .containsInvalidPlaceholders:
                 return "containsInvalidPlaceholders"
             case .placeholderCountsDontMatch:
                 return "placeholderCountsDontMatch"
@@ -228,7 +228,7 @@ extension JSONCommentRule {
                 return "invalidScreenshotURL"
             case .maxCharacterCountExceeded:
                 return "maxCharacterCountExceeded"
-            case .invalidJSONKey(_):
+            case .invalidJSONKey:
                 return "invalidJSONKey"
             }
         }
