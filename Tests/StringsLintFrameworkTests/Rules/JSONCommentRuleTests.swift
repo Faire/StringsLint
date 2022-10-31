@@ -241,7 +241,7 @@ class JSONCommentRuleTests: XCTestCase {
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.reason, "Comment for Localized string \"EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS\" the key max_char_count is not allowed in this structured comment")
+        XCTAssertEqual(rule.violations.first?.reason, "Comment for Localized string \"EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS\" contains invalid JSON keys: \"max_char_count\"")
     }
 
     func testStringWithMissingURL() {

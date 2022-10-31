@@ -34,12 +34,12 @@ public class JSONCommentRule {
         "day"
     ])
 
-    private var validKeys = [
+    private var validKeys = Set([
         "description",
         "placeholders",
         "img",
         "max_character_count"
-    ]
+    ])
 
     public init(declareParser: LocalizableParser,
                 defaultSeverity: ViolationSeverity,
@@ -126,10 +126,9 @@ extension JSONCommentRule: LintRule {
 
       do {
           let jsonDict = try JSONSerialization.jsonObject(with: jsonData, options: []) as! [String: Any]
-          for (k, _) in jsonDict {
-              if !validKeys.contains(k) {
-                  return .invalidJSONKey(invalidKey: k)
-              }
+          let invalidKeys = Set(jsonDict.keys).subtracting(validKeys)
+          if !invalidKeys.isEmpty {
+              return .invalidJSONKey(invalidKeys: invalidKeys)
           }
       } catch {}
 
@@ -184,7 +183,7 @@ extension JSONCommentRule {
         case missingScreenshotURL
         case invalidScreenshotURL
         case maxCharacterCountExceeded
-        case invalidJSONKey(invalidKey: String)
+        case invalidJSONKey(invalidKeys: Set<String>)
 
 
         var reasonDescription: String {
@@ -205,8 +204,8 @@ extension JSONCommentRule {
                 return "screenshot URL for this localized string is invalid"
             case .maxCharacterCountExceeded:
                 return "the string is longer than the max character count allowed"
-            case .invalidJSONKey(let invalidKey):
-                return "the key \(invalidKey) is not allowed in this structured comment"
+            case .invalidJSONKey(let invalidKeys):
+                return "contains invalid JSON keys: \"\(invalidKeys.joined(separator: "\", \""))\""
             }
         }
 
