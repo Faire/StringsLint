@@ -34,6 +34,13 @@ public class JSONCommentRule {
         "day"
     ])
 
+    private var validKeys = [
+        "description",
+        "placeholders",
+        "img",
+        "max_character_count"
+    ]
+
     public init(declareParser: LocalizableParser,
                 defaultSeverity: ViolationSeverity,
                 severityMap: [String:String]) {
@@ -117,6 +124,15 @@ extension JSONCommentRule: LintRule {
         return .invalidJSON
     }
 
+      do {
+          let jsonDict = try JSONSerialization.jsonObject(with: jsonData, options: []) as! [String: Any]
+          for (k, _) in jsonDict {
+              if !validKeys.contains(k) {
+                  return .invalidJSON
+              }
+          }
+      } catch {}
+
     guard let description = jsonComment.descriptionString else {
         return .missingDescription
     }
@@ -199,7 +215,7 @@ extension JSONCommentRule {
                 return "missingDescription"
             case .emptyDescription:
                 return "emptyDescription"
-            case .containsInvalidPlaceholders(let invalidPlaceholders):
+            case .containsInvalidPlaceholders(let _):
                 return "containsInvalidPlaceholders"
             case .placeholderCountsDontMatch:
                 return "placeholderCountsDontMatch"
