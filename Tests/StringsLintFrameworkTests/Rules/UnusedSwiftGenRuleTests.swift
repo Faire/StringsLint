@@ -368,7 +368,7 @@ let myVar = L10n.ProductDetails.InfoSection.title
 
     XCTAssertEqual(rule.violations.count, 1)
     XCTAssertTrue(rule.violations[0].severity == .error)
-    XCTAssertEqual(rule.violations[0].description, "<nopath>:1: error: Unused SwiftGen String Violation: This string is marked as WIP in .stringslint.yml, please remove this string from the WIP list. (unused_swiftgen_strings)")
+    XCTAssertEqual(rule.violations[0].description, "<nopath>:1: error: Unused SwiftGen String Violation: This string is marked as WIP but is referenced here. (unused_swiftgen_strings)")
   }
 
   func testStringWIPYaml_noDRE() throws {
@@ -436,7 +436,7 @@ work_in_progress:
 
     XCTAssertEqual(violations.count, 1)
     XCTAssertTrue(violations[0].severity == .warning)
-    XCTAssertEqual(violations[0].description, "<nopath>:5: warning: Unused SwiftGen String Violation: This string is marked as WIP here but is referenced at \"<nopath>:1\", please remove this string. (unused_swiftgen_strings)")
+    XCTAssertEqual(violations[0].description, "<nopath>:1: warning: Unused SwiftGen String Violation: This string is marked as WIP but is referenced here. (unused_swiftgen_strings)")
   }
 
   func testWipStringInUse_yamlViolation() throws {
@@ -474,6 +474,6 @@ work_in_progress:
 
     XCTAssertEqual(violations.count, 1)
     XCTAssertTrue(violations[0].severity == .warning)
-    XCTAssertEqual(violations[0].description, "<nopath>:5: warning: Unused SwiftGen String Violation: This string is marked as WIP here but is referenced at \"<nopath>:1\", please remove this string. (unused_swiftgen_strings)")
+    XCTAssertEqual(violations[0].description, "<nopath>:1: warning: Unused SwiftGen String Violation: This string is marked as WIP but is referenced here. (unused_swiftgen_strings)")
   }
 }
