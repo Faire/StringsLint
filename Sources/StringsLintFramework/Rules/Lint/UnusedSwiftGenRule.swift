@@ -95,21 +95,43 @@ public class UnusedSwiftGenRule: LintRule {
   }
 
   public var violations: [Violation] {
-    buildUnusedStringViolations() + buildWIPStringViolations() + yamlFileViolations
+    var retVal = [Violation]()
+    let group = DispatchGroup()
+    let lock = NSLock()
+
+    group.enter()
+    DispatchQueue.global(qos: .utility).async {
+      let result = self.buildUnusedStringViolations()
+      lock.lock()
+      retVal.append(contentsOf: result)
+      lock.unlock()
+      group.leave()
+    }
+
+    group.enter()
+    DispatchQueue.global(qos: .utility).async {
+      let result = self.buildWIPStringViolations()
+      lock.lock()
+      retVal.append(contentsOf: result)
+      lock.unlock()
+      group.leave()
+    }
+
+    group.wait()
+    return retVal + yamlFileViolations
   }
 
   private func buildUnusedStringViolations() -> [Violation] {
-    let usedStringMap = Set(usedStrings)
+    let usedStringSet = Set(usedStrings.map({ $0.key }))
+    let ignoredStringsSet = ignoredStrings
+      .union(wipStrings)
+      .union(Set(ignoreKeys.map({ $0.key.toL10nGenerated() })))
+
+    let usedOrIgnoredSet = usedStringSet.union(ignoredStringsSet)
+
     let unusedStrings = declaredStrings
       .filter { string in
-        !ignoredStrings.contains(string.key) &&
-        !wipStrings.contains(string.key) &&
-        !ignoreKeys.contains {
-          $0.key.toL10nGenerated() == string.key
-        }
-      }
-      .filter { string in
-        !usedStringMap.contains(string)
+        !usedOrIgnoredSet.contains(string.key)
       }
 
     return unusedStrings.compactMap({ (string) -> Violation? in
@@ -118,22 +140,14 @@ public class UnusedSwiftGenRule: LintRule {
   }
 
   private func buildWIPStringViolations() -> [Violation] {
-    usedStrings.compactMap { string -> Violation? in
-      if wipStrings.contains(string.key) {
+    let wipStringsSet = wipStrings.union(Set(ignoreKeys.map({ $0.key.toL10nGenerated() })))
+    return usedStrings.compactMap { string -> Violation? in
+      if wipStringsSet.contains(string.key) {
         return Violation(
           ruleDescription: UnusedSwiftGenRule.description,
           severity: severity,
           location: string.location,
-          reason: "This string is marked as WIP in .stringslint.yml, please remove this string from the WIP list.\(helpLinkDescription)"
-        )
-      }
-
-      if let ignoreKey = ignoreKeys.first(where: {$0.key.toL10nGenerated() == string.key }) {
-        return Violation(
-          ruleDescription: UnusedSwiftGenRule.description,
-          severity: severity,
-          location: ignoreKey.location,
-          reason: "This string is marked as WIP here but is referenced at \"\(string.location)\", please remove this string.\(helpLinkDescription)"
+          reason: "This string is marked as WIP but is referenced here.\(helpLinkDescription)"
         )
       }
       return nil
@@ -232,4 +246,13 @@ extension String {
       .joined()
   }
 
+}
+
+
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to: count, by: size).map {
+            Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
+    }
 }
