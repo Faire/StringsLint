@@ -129,12 +129,20 @@ public class UnusedSwiftGenRule: LintRule {
 
     let usedOrIgnoredSet = usedStringSet.union(ignoredStringsSet)
 
-    let unusedStrings = declaredStrings
-      .filter { string in
-        !usedOrIgnoredSet.contains(string.key)
-      }
+    // preprocess the declaredStrings so that we have a map from the string key to a list of LocalizedString
+    var map = Dictionary<String, [LocalizedString]>()
+    declaredStrings.forEach { string in
+      map.updateValue((map[string.key] ?? []) + [string], forKey: string.key)
+    }
 
-    return unusedStrings.compactMap({ (string) -> Violation? in
+    return map.keys
+      .filter { key in
+        !usedOrIgnoredSet.contains(key)
+      }
+      .flatMap { unusedKey in
+        map[unusedKey] ?? []
+      }
+      .compactMap({ (string) -> Violation? in
       buildViolation(key: string.key, location: string.location, comment: string.comment)
     })
   }
