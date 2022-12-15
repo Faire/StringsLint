@@ -24,7 +24,7 @@ public struct JSONCommentRuleConfiguration: RuleConfiguration {
         }
 
         self.severityMap = configuration["severity_map"] as! [String:String]
-        self.validPlaceholders = configuration["valid_placeholders"] as! [String]
+        self.validPlaceholders = defaultStringArray(configuration["valid_placeholders"])
     }
 
 }
