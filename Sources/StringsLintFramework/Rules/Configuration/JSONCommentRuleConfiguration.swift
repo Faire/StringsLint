@@ -15,6 +15,7 @@ public struct JSONCommentRuleConfiguration: RuleConfiguration {
     //TODO: (Mark Hall, July 18) once we have all the existing strings converted to the new comment format, make this an error severity
     public var defaultSeverity: ViolationSeverity = .warning
     public var severityMap: [String:String] = [:]
+    public var validPlaceholders: [String] = []
 
     public mutating func apply(_ configuration: Any) throws {
 
@@ -23,7 +24,7 @@ public struct JSONCommentRuleConfiguration: RuleConfiguration {
         }
 
         self.severityMap = configuration["severity_map"] as! [String:String]
-
+        self.validPlaceholders = defaultStringArray(configuration["valid_placeholders"])
     }
 
 }

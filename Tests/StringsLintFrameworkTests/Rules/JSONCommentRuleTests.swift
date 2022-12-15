@@ -10,9 +10,53 @@ import XCTest
 
 class JSONCommentRuleTests: XCTestCase {
 
-    func testStringWithValidComment() {
+  var rule: JSONCommentRule!
 
-        let file = File(name: "Localizable.strings", content: """
+  override func setUp() async throws {
+
+    let config = [
+      "json_comment_rule":
+        [
+          "severity_map":
+            [
+              "invalidJSON": "error",
+              "missingDescription": "error",
+              "emptyDescription": "error",
+              "containsInvalidPlaceholders": "error",
+              "placeholderCountsDontMatch": "error",
+              "missingScreenshotURL": "warning",
+              "invalidScreenshotURL": "warning",
+              "maxCharacterCountExceeded": "warning"
+            ],
+          "valid_placeholders":
+            [
+              "number",
+              "date",
+              "time",
+              "money",
+              "company_name",
+              "formatting",
+              "fully_translated_sentence",
+              "person_name",
+              "currency_code",
+              "event_name",
+              "email_address",
+              "tariff_code",
+              "tracking_code",
+              "token",
+              "sku",
+              "month",
+              "day",
+              "postal_code"
+            ]
+        ]
+    ]
+    rule = try JSONCommentRule(configuration: config)
+  }
+
+  func testStringWithValidComment() {
+
+    let file = File(name: "Localizable.strings", content: """
             /*
               Retailer.strings
               Retailer
@@ -30,7 +74,6 @@ class JSONCommentRuleTests: XCTestCase {
             "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 0)
@@ -54,11 +97,10 @@ class JSONCommentRuleTests: XCTestCase {
             "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.severity, .warning)
+        XCTAssertEqual(rule.violations.first?.severity, .error)
     }
 
     func testStringWithEmptyDescriptionInComment() {
@@ -80,11 +122,10 @@ class JSONCommentRuleTests: XCTestCase {
             "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.severity, .warning)
+        XCTAssertEqual(rule.violations.first?.severity, .error)
     }
 
     func testStringWithInvalidPlaceholdersInComment() {
@@ -106,11 +147,10 @@ class JSONCommentRuleTests: XCTestCase {
             "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.severity, .warning)
+        XCTAssertEqual(rule.violations.first?.severity, .error)
     }
 
     func testStringWithPlaceholderCountNotMatchingInComment() {
@@ -132,11 +172,10 @@ class JSONCommentRuleTests: XCTestCase {
             "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.severity, .warning)
+        XCTAssertEqual(rule.violations.first?.severity, .error)
     }
 
     func testStringWithInvalidComment() {
@@ -156,11 +195,10 @@ class JSONCommentRuleTests: XCTestCase {
             "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
-        XCTAssertEqual(rule.violations.first?.severity, .warning)
+        XCTAssertEqual(rule.violations.first?.severity, .error)
     }
 
   func testStringWithValidComment_NewlyAddedPlaceholderTypes() {
@@ -183,7 +221,6 @@ class JSONCommentRuleTests: XCTestCase {
           "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@ %@ %@";
           """)
 
-      let rule = JSONCommentRule()
       rule.processFile(file)
 
       XCTAssertEqual(rule.violations.count, 0)
@@ -210,7 +247,6 @@ class JSONCommentRuleTests: XCTestCase {
           "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
           """)
 
-      let rule = JSONCommentRule()
       rule.processFile(file)
 
       XCTAssertEqual(rule.violations.count, 0)
@@ -237,7 +273,6 @@ class JSONCommentRuleTests: XCTestCase {
             "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
@@ -263,7 +298,6 @@ class JSONCommentRuleTests: XCTestCase {
             "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
@@ -290,7 +324,6 @@ class JSONCommentRuleTests: XCTestCase {
             "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
@@ -318,7 +351,6 @@ class JSONCommentRuleTests: XCTestCase {
             "EMPTY_STATE.VIEW_BAG_BUTTON_MULTIPLE_PLACEHOLDERS" = "View Bag %@ %@";
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
@@ -354,7 +386,7 @@ class JSONCommentRuleTests: XCTestCase {
             "placeholderCountsDontMatch": "error",
             "missingScreenshotURL": "none",
             "invalidScreenshotURL": "none",
-            "maxCharacterCountExceeded": "none"]]]
+            "maxCharacterCountExceeded": "none"], "valid_placeholders": ["day", "month"]]]
 
         var rule: JSONCommentRule?
         do {
@@ -406,7 +438,6 @@ class JSONCommentRuleTests: XCTestCase {
           </plist>
           """)
 
-      let rule = JSONCommentRule()
       rule.processFile(file)
 
       XCTAssertEqual(rule.violations.count, 0)
@@ -445,7 +476,6 @@ class JSONCommentRuleTests: XCTestCase {
           </plist>
           """)
 
-      let rule = JSONCommentRule()
       rule.processFile(file)
 
       XCTAssertEqual(rule.violations.count, 1)
@@ -485,7 +515,6 @@ class JSONCommentRuleTests: XCTestCase {
           </plist>
           """)
 
-      let rule = JSONCommentRule()
       rule.processFile(file)
 
       XCTAssertEqual(rule.violations.count, 0)
@@ -524,7 +553,6 @@ class JSONCommentRuleTests: XCTestCase {
           </plist>
           """)
 
-      let rule = JSONCommentRule()
       rule.processFile(file)
 
       XCTAssertEqual(rule.violations.count, 1)
@@ -563,7 +591,6 @@ class JSONCommentRuleTests: XCTestCase {
             </plist>
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)
@@ -603,7 +630,6 @@ class JSONCommentRuleTests: XCTestCase {
             </plist>
             """)
 
-        let rule = JSONCommentRule()
         rule.processFile(file)
 
         XCTAssertEqual(rule.violations.count, 1)

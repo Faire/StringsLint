@@ -9,30 +9,11 @@ import Foundation
 
 public class JSONCommentRule {
     private var declaredStrings = [LocalizedString]()
-    var defaultSeverity: ViolationSeverity
-    var severityMap: [String:String]
+    private var defaultSeverity: ViolationSeverity
+    private var severityMap: [String: String]
+    private var validPlaceholders: Set<String>
 
     private let declareParser: LocalizableParser
-
-    private var validPlaceholders = Set([
-        "number",
-        "date",
-        "time",
-        "money",
-        "company_name",
-        "formatting",
-        "fully_translated_sentence",
-        "person_name",
-        "currency_code",
-        "event_name",
-        "email_address",
-        "tariff_code",
-        "tracking_code",
-        "token",
-        "sku",
-        "month",
-        "day"
-    ])
 
     private var validKeys = Set([
         "description",
@@ -43,10 +24,12 @@ public class JSONCommentRule {
 
     public init(declareParser: LocalizableParser,
                 defaultSeverity: ViolationSeverity,
-                severityMap: [String:String]) {
+                severityMap: [String:String],
+                validPlaceholders: [String]) {
         self.declareParser = declareParser
         self.defaultSeverity = defaultSeverity
         self.severityMap = severityMap
+        self.validPlaceholders = Set(validPlaceholders)
     }
 
     public required convenience init(configuration: Any) throws {
@@ -58,7 +41,8 @@ public class JSONCommentRule {
         self.init(declareParser: ComposedParser(parsers: [try StringsdictParser.self.init(configuration: configuration),
                                                           try StringsJSONCommentParser.self.init(configuration: configuration)]),
                   defaultSeverity: config.defaultSeverity,
-                  severityMap: config.severityMap)
+                  severityMap: config.severityMap,
+                  validPlaceholders: config.validPlaceholders)
     }
 
     public required convenience init() {
@@ -67,7 +51,8 @@ public class JSONCommentRule {
         self.init(declareParser: ComposedParser(parsers: [StringsdictParser(),
                                                           StringsJSONCommentParser()]),
                   defaultSeverity: config.defaultSeverity,
-                  severityMap: config.severityMap)
+                  severityMap: config.severityMap,
+                  validPlaceholders: config.validPlaceholders)
     }
 
     private func processDeclarationFile(_ file: File) -> [LocalizedString] {
