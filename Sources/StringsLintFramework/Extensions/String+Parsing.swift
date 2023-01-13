@@ -56,7 +56,8 @@ extension String {
     }
 
     var localizedKey: String? {
-        return self.matchFirst(regex: "\"(?<key>.*)\" = \"(.*)\"")
+      //InfoPlist.strings files don't have quotes (") around key names so we optionally check for the presence of quotes surrounding the <key> capture group
+      return self.matchFirst(regex: "\"?(?<key>[^\"]*)\"? = \".*\"")
     }
 
     var localizedValue: String? {
